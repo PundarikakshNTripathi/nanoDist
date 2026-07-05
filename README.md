@@ -152,11 +152,17 @@ The project infrastructure enforces continuous integration and strict determinis
 ## Environment Setup and Execution
 
 1. **Prerequisites**: Ensure you have `uv` installed on your system.
-2. **Setup**: Clone the repository and run the Makefile initialization:
+2. **Environment Variables**: Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+   *(Optional: populate `WANDB_API_KEY` inside `.env` to enable online telemetry).*
+3. **Setup**: Clone the repository and run the Makefile initialization:
    ```bash
    make setup
    ```
-3. **Execution**: Run the full distributed training loop:
+   *Note: Docker securely reads the local `.env` file to pass your API keys into the isolated containers.*
+4. **Execution**: Run the full distributed training loop:
    ```bash
    uv run python main.py
    ```
@@ -170,6 +176,11 @@ The project infrastructure enforces continuous integration and strict determinis
 ## Results, Benchmarks and Evaluation
 
 The engine's memory constraints are dynamically profiled against standard unoptimized paradigms. The metrics below are automatically updated whenever `make benchmark` is executed.
+
+### Hardware Specifications for Benchmarks
+- **CPU**: Intel(R) Core(TM) i7-14650HX (16 Cores, 24 Threads)
+- **Memory**: 24 GB RAM
+- **GPU**: NVIDIA GeForce RTX 5060 Laptop GPU
 
 <!-- BENCHMARK_METRICS_START -->
 | Component | Baseline (MB) | Optimized (MB) |
