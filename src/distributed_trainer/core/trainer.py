@@ -113,3 +113,27 @@ def grad_accumulation_step(x, y, params, micro_batch_size):
     final_grads = scale_accumulated_gradients(accum_grads, num_micro_batches)
     
     return final_grads
+
+def compute_local_gradients(x, y, params):
+    """
+    Compute parameter gradients for one worker's data shard.
+    
+    Args:
+        x: The worker's assigned input shard, shape (N_shard, in_dim).
+        y: The worker's assigned target shard, shape (N_shard, out_dim).
+        params: Dictionary of the current network parameters.
+        
+    Returns:
+        grads: A dictionary of parameter gradients computed ONLY on this shard.
+    """
+    # 1. Forward pass: The worker guesses the answers for its specific data
+    y_pred, cache = mlp_forward(x, params)
+    
+    # 2. Loss calculation: The worker calculates how wrong its guesses were
+    loss, dy_pred = mse_loss_and_grad(y_pred, y)
+    
+    # 3. Backward pass: The worker figures out how it would change the weights 
+    # to fix its specific mistakes
+    grads = mlp_backward(dy_pred, cache, params)
+    
+    return grads
