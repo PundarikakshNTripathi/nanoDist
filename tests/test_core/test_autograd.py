@@ -19,5 +19,5 @@ def test_mse_loss():
     y_pred = np.array([[1.0, 1.0]])
     y_true = np.array([[1.0, 0.0]])
     loss, grad = mse_loss_and_grad(y_pred, y_true)
-    assert loss == 0.25 # (0 + 1) / 2 / 2
+    assert loss == 0.5 # (0^2 + 1^2) / 2 = 0.5
     assert grad.shape == y_pred.shape
