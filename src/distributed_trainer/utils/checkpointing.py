@@ -1,12 +1,12 @@
 import numpy as np
 import os
-import pickle
 
-def save_checkpoint(path: str, params: dict, optimizer_state: dict, step: int):
+def save_checkpoint(params: dict, path: str):
+    """Safely saves model parameters to disk using NPZ format."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'wb') as f:
-        pickle.dump({'params': params, 'optimizer_state': optimizer_state, 'step': step}, f)
+    np.savez(path, **params)
 
-def load_checkpoint(path: str):
-    with open(path, 'rb') as f:
-        return pickle.load(f)
+def load_checkpoint(path: str) -> dict:
+    """Loads model parameters from disk."""
+    with np.load(path) as data:
+        return {key: data[key] for key in data.files}
