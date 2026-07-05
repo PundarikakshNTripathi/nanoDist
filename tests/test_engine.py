@@ -1,4 +1,3 @@
-import numpy as np
 from distributed_trainer.data.ingestion import make_synthetic_regression_batch
 from distributed_trainer.core.layers import init_mlp_params
 

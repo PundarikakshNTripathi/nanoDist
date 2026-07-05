@@ -1,4 +1,3 @@
-import numpy as np
 
 from distributed_trainer.data.distributed_sharder import shard_dataset_across_workers
 from distributed_trainer.core.trainer import compute_local_gradients

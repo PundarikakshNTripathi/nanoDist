@@ -1,6 +1,5 @@
 import numpy as np
 from distributed_trainer.core.layers import linear_forward, relu_forward
-from distributed_trainer.core.autograd import linear_backward
 from distributed_trainer.evaluation.metrics import mse_loss_and_grad
 
 def test_linear_forward():

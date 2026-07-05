@@ -11,7 +11,7 @@ COPY src/ ./src/
 COPY conf/ ./conf/
 COPY main.py ./
 
-# Sync dependencies globally
-RUN uv sync --system
+# Sync dependencies
+RUN uv sync
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["uv", "run", "python", "main.py"]

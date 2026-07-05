@@ -1,7 +1,6 @@
 import time
 import sys
 sys.path.insert(0, "src")
-import numpy as np
 from distributed_trainer.core.trainer import Trainer
 from distributed_trainer.data.ingestion import make_synthetic_regression_batch
 from omegaconf import OmegaConf

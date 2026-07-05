@@ -11,7 +11,6 @@ def all_reduce_mean(per_worker_grads):
     Returns:
         averaged_grads: A single dictionary with the elementwise mean across workers.
     """
-    num_workers = len(per_worker_grads)
     
     # We can extract the parameter names from the first worker's dictionary
     keys = per_worker_grads[0].keys()
