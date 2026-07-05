@@ -1,4 +1,5 @@
 import numpy as np
+from distributed_trainer.core.layers import linear_forward, relu_forward
 
 def linear_backward(d_out, x, w):
     """
@@ -103,5 +104,84 @@ def mlp_backward(dy_pred, cache, params):
         'W2': dW2,
         'b2': db2
     }
+    
+    return grads
+
+
+def mlp_forward_checkpointed(x, params):
+    """
+    Run a memory-light forward pass for a two-layer MLP.
+    
+    Args:
+        x: Input array of shape (N, in_dim).
+        params: Dictionary containing 'W1', 'b1', 'W2', 'b2'.
+        
+    Returns:
+        y_pred: The final prediction array of shape (N, out_dim).
+        cache: A minimal dictionary containing ONLY 'x' for the backward pass.
+    """
+    # 1. Compute the forward pass normally
+    z1 = linear_forward(x, params['W1'], params['b1'])
+    a1 = relu_forward(z1)
+    y_pred = linear_forward(a1, params['W2'], params['b2'])
+    
+    # 2. The Checkpoint: Save ONLY the input to this block
+    # We intentionally throw away z1, a1, and z2 to save RAM.
+    cache = {
+        'x': x
+    }
+    
+    return y_pred, cache
+
+
+def recompute_block_activations(x, params):
+    """
+    Recompute intermediate activations for a two-layer MLP block.
+    
+    Args:
+        x: The saved input array of shape (N, in_dim).
+        params: Dictionary containing 'W1', 'b1', 'W2', 'b2'.
+        
+    Returns:
+        cache: Dictionary containing 'x', 'z1', 'a1', 'z2' perfectly formatted 
+               for the backward pass.
+    """
+    # 1. Re-run the First Linear Layer
+    z1 = linear_forward(x, params['W1'], params['b1'])
+    
+    # 2. Re-run the ReLU Activation
+    a1 = relu_forward(z1)
+    
+    # 3. Re-run the Second Linear Layer
+    z2 = linear_forward(a1, params['W2'], params['b2'])
+    
+    # 4. Reconstruct the full cache exactly as mlp_backward expects it
+    cache = {
+        'x': x,
+        'z1': z1,
+        'a1': a1,
+        'z2': z2
+    }
+    
+    return cache
+
+
+def mlp_backward_checkpointed(dy_pred, light_cache, params):
+    """
+    Perform the backward pass using a checkpointed (light) cache.
+    
+    Args:
+        dy_pred: Upstream gradient of the loss, shape (N, out_dim).
+        light_cache: Minimal dictionary containing ONLY the input 'x'.
+        params: Dictionary containing 'W1', 'b1', 'W2', 'b2'.
+        
+    Returns:
+        grads: A dictionary of parameter gradients with keys 'W1', 'b1', 'W2', 'b2'.
+    """
+    # 1. Rebuild the deleted memory (z1, a1, z2) from the single saved 'x'
+    full_cache = recompute_block_activations(light_cache['x'], params)
+    
+    # 2. Run the standard backward pass now that the memory is fully restored
+    grads = mlp_backward(dy_pred, full_cache, params)
     
     return grads
