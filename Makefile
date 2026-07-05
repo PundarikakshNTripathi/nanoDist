@@ -1,20 +1,21 @@
-.PHONY: test lint format run-simulation
+.PHONY: setup lint format test docker-up docker-down
 
-test:
-	pytest tests/
+setup:
+	uv sync
+	uv run pre-commit install
 
 lint:
-	ruff check .
-	mypy src/
+	uv run ruff check .
+	uv run mypy src/
 
 format:
-	ruff format .
+	uv run ruff format .
 
-run-simulation:
-	python scripts/run_hpc_simulation.py
+test:
+	uv run pytest tests/ --cov=src/distributed_trainer
 
 docker-up:
-	cd docker && docker-compose up -d
+	cd docker && docker-compose up --build -d
 
 docker-down:
 	cd docker && docker-compose down

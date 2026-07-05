@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  worker-1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["training.num_workers=2"]
+    environment:
+      - WANDB_API_KEY=${WANDB_API_KEY}
+  worker-2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["training.num_workers=2"]
+    environment:
+      - WANDB_API_KEY=${WANDB_API_KEY}

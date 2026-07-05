@@ -1,12 +1,18 @@
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from loguru import logger
+import wandb
+import os
+from dotenv import load_dotenv
 
 from distributed_trainer.core.trainer import Trainer
 from distributed_trainer.data.ingestion import make_synthetic_regression_batch
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig) -> None:
+    load_dotenv()
+    wandb.init(project="nanoDist", config=OmegaConf.to_container(cfg, resolve=True))
+    
     logger.info("Initializing nanoDist with the following configuration:")
     logger.info("\n" + OmegaConf.to_yaml(cfg))
     
