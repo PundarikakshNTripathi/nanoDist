@@ -60,12 +60,11 @@ The engine mathematically implements Several state-of-the-art training paradigms
 ---
 
 ## Conceptual Overview
-For those unfamiliar with distributed machine learning:
-Imagine trying to read an encyclopedia (the dataset) and memorize it (the model parameters), but your brain (GPU memory) is too small. 
-- **Distributed Data Parallelism** means hiring 4 people to read 1/4th of the encyclopedia each. They meet to combine their notes (All-Reduce).
-- **ZeRO Optimizer** means that instead of every person bringing a giant notebook of scratch-work (Optimizer State) to the meeting, they each only bring 1/4th of the notebook and share the conclusions.
-- **Activation Checkpointing** means instead of remembering every single page you read, you only remember the chapter titles, and if you are tested on a specific page, you quickly re-read that chapter.
-- **Mixed Precision** means writing your notes using a thinner pen, fitting twice as much ink on a page without losing the meaning of the words.
+Conceptually, training massive models requires distributing the parameter load across physical hardware arrays to circumvent memory limits:
+- **Distributed Data Parallelism** allows parameter workloads to be partitioned across $N$ processing units, with synchronization achieved via All-Reduce operations.
+- **ZeRO Optimizer Partitioning** mathematically distributes optimizer state matrices across the cluster, preventing OOM (Out Of Memory) faults during state tracking.
+- **Activation Checkpointing** limits memory consumption by caching only strategic boundary tensors during the forward pass and dynamically recalculating intermediate activations during backpropagation.
+- **Mixed Precision** maps tensors to FP16 vectors, halving physical memory footprints while retaining sufficient numeric fidelity via dynamic loss scaling.
 
 ---
 
@@ -151,22 +150,20 @@ The project infrastructure enforces continuous integration and strict determinis
 
 ## Environment Setup and Execution
 
-1. **Prerequisites**: Ensure you have `uv` installed on your system.
-2. **Environment Variables**: Copy the example environment file:
+1. **Prerequisites**: Installation of `uv` is required.
+2. **Environment Configuration**: The example environment file should be copied to `.env`.
    ```bash
    cp .env.example .env
    ```
-   *(Optional: populate `WANDB_API_KEY` inside `.env` to enable online telemetry).*
-3. **Setup**: Clone the repository and run the Makefile initialization:
+3. **Initialization**: The repository is initialized via the provided Makefile.
    ```bash
    make setup
    ```
-   *Note: Docker securely reads the local `.env` file to pass your API keys into the isolated containers.*
-4. **Execution**: Run the full distributed training loop:
+4. **Execution**: Training loops are initiated via the command line.
    ```bash
    uv run python main.py
    ```
-4. **Testing & Benchmarks**: Run the entire pipeline, including linting, testing, and dynamic benchmarking via a single command:
+5. **Validation**: The complete pipeline is executed using the following directive:
    ```bash
    make all
    ```
@@ -210,7 +207,8 @@ The engine's memory constraints are dynamically profiled against standard unopti
 ---
 
 ## Troubleshooting
-- **Missing WANDB_API_KEY**: Ensure you have copied `.env.example` to `.env` and populated it with your Weights & Biases API key. The system will gracefully fall back to local logging if omitted.
+- **Memory Allocation Errors**: If OOM exceptions occur, reduce `batch_size` in `conf/config.yaml` or enable `use_checkpointing`.
+- **Missing WANDB_API_KEY**: The `.env.example` file must be copied to `.env` and populated with a valid Weights & Biases API key. The system defaults to local logging if omitted.
 - **Docker Mount Failures**: If running `make docker-up` on Windows, ensure Docker Desktop has file sharing permissions granted for the repository path.
 
 ---
@@ -228,14 +226,12 @@ Please review our formal [Contributing Guide](CONTRIBUTING.md) before submitting
 
 ## License Summary
 This software is provided under the **Elastic License 2.0**.
-Key stipulations include:
-1. You may freely use, copy, distribute, and modify the software.
-2. You **may not** provide the software to third parties as a managed or hosted service.
-3. You **may not** circumvent license key functionalities.
-4. You must preserve all copyright and license notices.
-5. Violations result in automatic license termination.
+1. Usage, copying, distribution, and modification of the software are permitted.
+2. Providing the software to third parties as a managed or hosted service is prohibited.
+3. Circumvention of license key functionalities is prohibited.
+4. All copyright and license notices must be preserved.
 
-*(This is a summary. Refer to the [LICENSE](LICENSE) file for legally binding definitions.)*
+*(Refer to the [LICENSE](LICENSE) file for legally binding definitions.)*
 
 ---
 
