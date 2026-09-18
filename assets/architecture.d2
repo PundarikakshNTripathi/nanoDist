@@ -1,0 +1,62 @@
+grid-columns: 2
+style: {
+  fill: "#fffdd0"
+  stroke: transparent
+}
+
+classes: {
+  process: { style: { fill: "#a8d0e6"; border-radius: 8; shadow: true; stroke: "#5a8a9e" } }
+  memory: { shape: cylinder; style: { fill: "#f8e9a1"; shadow: true; stroke: "#bba53d" } }
+  network: { shape: cloud; style: { fill: "#b5e7a0"; shadow: true; stroke: "#7aab65" } }
+  telemetry: { style: { fill: "#f76c6c"; border-radius: 8; shadow: true; stroke: "#b03a3a" } }
+}
+
+"Worker Node": {
+  direction: down
+  style: { fill: "#fdfdfd"; stroke-dash: 5; border-radius: 12; shadow: true; stroke: "#cccccc" }
+  
+  "Hydra Config": { class: process }
+  "Trainer Orchestrator": { class: process }
+  
+  "Execution Engine": {
+    grid-columns: 2
+    style: { fill: transparent; stroke: transparent }
+    "Data Sharder": { class: process }
+    "Mixed Precision (FP16)": { class: process }
+    "Checkpointing Cache": { class: memory }
+    "Backward Pass (FP16)": { class: process }
+    "Ring All-Reduce Sync": { class: process }
+    "ZeRO State Shard": { class: memory }
+  }
+}
+
+"Worker Node"."Hydra Config" -> "Worker Node"."Trainer Orchestrator"
+"Worker Node"."Trainer Orchestrator" -> "Worker Node"."Execution Engine"."Data Sharder"
+"Worker Node"."Trainer Orchestrator" -> "Worker Node"."Execution Engine"."Mixed Precision (FP16)"
+"Worker Node"."Execution Engine"."Mixed Precision (FP16)" -> "Worker Node"."Execution Engine"."Checkpointing Cache"
+"Worker Node"."Execution Engine"."Checkpointing Cache" -> "Worker Node"."Execution Engine"."Backward Pass (FP16)"
+"Worker Node"."Execution Engine"."Backward Pass (FP16)" -> "Worker Node"."Execution Engine"."Ring All-Reduce Sync"
+"Worker Node"."Execution Engine"."Ring All-Reduce Sync" -> "Worker Node"."Execution Engine"."ZeRO State Shard"
+"Worker Node"."Execution Engine"."ZeRO State Shard" -> "Worker Node"."Trainer Orchestrator"
+
+"Infrastructure": {
+  direction: down
+  style: { fill: transparent; stroke: transparent }
+  
+  "Cluster Network": {
+    style: { fill: "#fdfdfd"; border-radius: 10; stroke-dash: 5; shadow: true; stroke: "#cccccc" }
+    "Sibling Workers": { class: network }
+  }
+  
+  "Observability": {
+    style: { fill: "#fdfdfd"; border-radius: 10; stroke-dash: 5; shadow: true; stroke: "#cccccc" }
+    "WandB Dashboard": { class: telemetry }
+    "Loguru Console": { class: telemetry }
+  }
+}
+
+"Worker Node"."Execution Engine"."Ring All-Reduce Sync" -> "Infrastructure"."Cluster Network"."Sibling Workers": "TCP Simulation" { style.animated: true; style.stroke-dash: 5 }
+"Infrastructure"."Cluster Network"."Sibling Workers" -> "Worker Node"."Execution Engine"."Ring All-Reduce Sync": "Sync" { style.animated: true; style.stroke-dash: 5 }
+
+"Worker Node"."Trainer Orchestrator" -> "Infrastructure"."Observability"."WandB Dashboard": "Metrics" { style.animated: true; style.stroke-dash: 5; style.stroke: "#f76c6c" }
+"Worker Node"."Trainer Orchestrator" -> "Infrastructure"."Observability"."Loguru Console": "Logs" { style.animated: true; style.stroke-dash: 5; style.stroke: "#f76c6c" }

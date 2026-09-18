@@ -70,30 +70,7 @@ Conceptually, training massive models requires distributing the parameter load a
 
 ## System Architecture
 
-```mermaid
-graph TD
-    subgraph Worker Node [Individual Training Node]
-        A[Hydra Configuration] --> B(Trainer Orchestrator)
-        B --> C[Data Sharder]
-        B --> D[Mixed Precision Forward Pass FP16]
-        D --> E[Activation Checkpointing Cache]
-        E --> F[Backward Pass FP16]
-        
-        F --> G[Ring All-Reduce Synchronization]
-        
-        G --> H[ZeRO Optimizer Shard FP32]
-        H --> B
-    end
-    
-    subgraph Communication [Cluster Network]
-        G <-->|TCP/IP Simulation| I((Sibling Workers))
-    end
-    
-    subgraph Telemetry
-        B -.-> J[WandB Dashboard]
-        B -.-> K[Loguru Console]
-    end
-```
+![System Architecture](assets/architecture.svg)
 
 The system is designed as a modular pipeline where configuration dictates the execution graph, passing through memory-efficient forward/backward engines before synchronizing across simulated network boundaries and updating sharded states.
 
